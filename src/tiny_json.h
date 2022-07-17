@@ -51,7 +51,11 @@ enum {
     // 丢失 value
     JSON_PARSE_MISS_COLON,
     // object 丢失符号
-    JSON_PARSE_MISS_COMMA_OR_CURLY_BRACKET
+    JSON_PARSE_MISS_COMMA_OR_CURLY_BRACKET,
+
+    // 
+    JSON_STRINGIFY_OK,
+    JSON_STRINGIFY_FALSE
 };
 
 typedef struct tiny_member tiny_member;
@@ -90,8 +94,8 @@ struct tiny_value
 
 struct tiny_member
 {
-    char *key;  // object name
-    size_t len; // name length
+    char *key;  // object key
+    size_t len; // key length
     tiny_value value;
 };
 
@@ -153,5 +157,8 @@ size_t get_object_key_length(const tiny_value *value, size_t index);
 
 tiny_value *get_object(const tiny_value *value, size_t index);
 
+// ---------------- stringify ----------------
+
+int tiny_stringify(const tiny_value *value, char ** json, size_t *length);
 
 #endif

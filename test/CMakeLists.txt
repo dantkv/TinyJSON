@@ -33,6 +33,7 @@ set(TEST_LIST
     func_test
     array_test
     object_test
+    stringify_bool_test
 )
 
 foreach(src ${TEST_LIST})
