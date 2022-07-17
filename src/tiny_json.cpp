@@ -16,6 +16,7 @@ typedef struct
 
 #define DEFAULT_SIZE 16
 #define DEFAULT_STRINGIFY_SIZE 128
+#define DEFAULT_NUMBER_MAX_LENGTH 32
 
 void tiny_init(tiny_value *value){
     value->value_type = TINY_NULL;
@@ -635,6 +636,14 @@ static int tiny_parse_value(tiny_context *context, tiny_value *value){
 }
 
 // ---------------- stringify ----------------
+
+static int tiny_stringify_number(tiny_context *ctx, const tiny_value *value){
+    char *num = (char *)context_push(ctx, DEFAULT_NUMBER_MAX_LENGTH);
+    int len = sprintf(num, "%.17g", value->number);
+    ctx->top -= DEFAULT_NUMBER_MAX_LENGTH-len;
+    return JSON_STRINGIFY_OK;
+}
+
 static int tiny_stringify_value(tiny_context *ctx, const tiny_value *value){
     switch (value->value_type)
     {
@@ -647,6 +656,8 @@ static int tiny_stringify_value(tiny_context *ctx, const tiny_value *value){
     case TINY_NULL:
         memcpy(context_push(ctx, 4), "null", 4);
         break;
+    case TINY_NUMBER:
+        return tiny_stringify_number(ctx, value);
     default:    return JSON_STRINGIFY_FALSE;
     }
     return JSON_STRINGIFY_OK;
@@ -654,6 +665,7 @@ static int tiny_stringify_value(tiny_context *ctx, const tiny_value *value){
 
 int tiny_stringify(const tiny_value *value, char ** json, size_t *length){
     assert(value != nullptr);
+    assert(json != nullptr);
     tiny_context ctx;
     ctx.size = DEFAULT_STRINGIFY_SIZE;
     ctx.stack = (char *)malloc(ctx.size);
