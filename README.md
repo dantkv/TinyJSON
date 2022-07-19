@@ -1,6 +1,6 @@
 # TinyJSON
 
-此项目参考 [json-tutorial](https://github.com/miloyip/json-tutorial) 项目，使用C++实现简单的JSON解析器
+此项目参考 [json-tutorial](https://github.com/miloyip/json-tutorial) 项目，C语言风格实现的JSON解析器
 
 ### 运行环境：
 - Linux
