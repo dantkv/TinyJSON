@@ -35,6 +35,7 @@ set(TEST_LIST
     object_test
     stringify_bool_test
     stringify_number_test
+    stringify_string_test
 )
 
 foreach(src ${TEST_LIST})

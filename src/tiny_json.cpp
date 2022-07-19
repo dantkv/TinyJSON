@@ -644,6 +644,62 @@ static int tiny_stringify_number(tiny_context *ctx, const tiny_value *value){
     return JSON_STRINGIFY_OK;
 }
 
+static int tiny_stringify_string(tiny_context *ctx, const tiny_value *value){
+    /**
+     * 为避免频繁调用PUTC，可以直接操作栈指针进行字符存储
+     */
+    
+    // unicode编码占6字节，加前后双引号2字节
+
+    size_t size = value->str_len*6+2;
+    char *ptr = (char *)context_push(ctx, size);
+    char *head = ptr;
+    *ptr++ = '\"';
+    for(size_t i = 0; i < value->str_len; i++){
+        char c = value->str[i];
+        switch (c) {
+            case '\\': 
+                *ptr++ = '\\';
+                *ptr++ = '\\';
+                break;
+            case '\"':
+                *ptr++ =  '\\';
+                *ptr++ =  '\"';
+                break;
+            case '/':
+                *ptr++ = '\\';
+                *ptr++ = '/';
+                break;
+            case '\b':
+                *ptr++ = '\\';
+                *ptr++ = 'b';
+                break;
+            case '\f':
+                *ptr++ = '\\';
+                *ptr++ =  'f';
+                break;
+            case '\n':
+                *ptr++ = '\\';
+                *ptr++ = 'n';
+                break;
+            case '\r':
+                *ptr++ = '\\';
+                *ptr++ = 'r';
+                break;
+            case '\t':
+                *ptr++ = '\\';
+                *ptr++ = 't';
+                break;
+            default:
+                *ptr++ = c;
+                break;
+        }
+    }
+    *ptr++ = '\"';
+    ctx->top -= size - (ptr-head);
+    return JSON_STRINGIFY_OK;
+}
+
 static int tiny_stringify_value(tiny_context *ctx, const tiny_value *value){
     switch (value->value_type)
     {
@@ -658,6 +714,8 @@ static int tiny_stringify_value(tiny_context *ctx, const tiny_value *value){
         break;
     case TINY_NUMBER:
         return tiny_stringify_number(ctx, value);
+    case TINY_STRING:
+        return tiny_stringify_string(ctx, value);
     default:    return JSON_STRINGIFY_FALSE;
     }
     return JSON_STRINGIFY_OK;
