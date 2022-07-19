@@ -714,6 +714,23 @@ static int tiny_stringify_array(tiny_context *ctx, const tiny_value *value){
     return JSON_STRINGIFY_OK;
 }
 
+static int tiny_stringify_object(tiny_context *ctx, const tiny_value *value){
+    PUTC(ctx, '{');
+    for (size_t i = 0; i < value->member_size; i++){
+        PUTC(ctx, '\"');
+        char * key = (char *)context_push(ctx, value->member_ptr[i].len);
+        memcpy(key, value->member_ptr[i].key, value->member_ptr[i].len);
+        PUTC(ctx, '\"');
+        PUTC(ctx, ':');
+        int result = tiny_stringify_value(ctx, &value->member_ptr[i].value);
+        if (result == JSON_STRINGIFY_OK && i < value->member_size-1){
+            PUTC(ctx, ',');
+        }
+    }
+    PUTC(ctx, '}');
+    return JSON_STRINGIFY_OK;
+}
+
 static int tiny_stringify_value(tiny_context *ctx, const tiny_value *value){
     switch (value->value_type)
     {
@@ -732,6 +749,8 @@ static int tiny_stringify_value(tiny_context *ctx, const tiny_value *value){
         return tiny_stringify_string(ctx, value);
     case TINY_ARRAY:
         return tiny_stringify_array(ctx, value);
+    case TINY_OBJECT:
+        return tiny_stringify_object(ctx, value);
     default:    return JSON_STRINGIFY_FALSE;
     }
     return JSON_STRINGIFY_OK;
