@@ -637,6 +637,8 @@ static int tiny_parse_value(tiny_context *context, tiny_value *value){
 
 // ---------------- stringify ----------------
 
+static int tiny_stringify_value(tiny_context *ctx, const tiny_value *value);
+
 static int tiny_stringify_number(tiny_context *ctx, const tiny_value *value){
     char *num = (char *)context_push(ctx, DEFAULT_NUMBER_MAX_LENGTH);
     int len = sprintf(num, "%.17g", value->number);
@@ -700,6 +702,18 @@ static int tiny_stringify_string(tiny_context *ctx, const tiny_value *value){
     return JSON_STRINGIFY_OK;
 }
 
+static int tiny_stringify_array(tiny_context *ctx, const tiny_value *value){
+    PUTC(ctx, '[');
+    for (size_t i = 0; i < value->arr_size; i++){
+        int result = tiny_stringify_value(ctx, &value->arr_ptr[i]);
+        if (result == JSON_STRINGIFY_OK && i < value->arr_size-1){
+            PUTC(ctx, ',');
+        }
+    }
+    PUTC(ctx, ']');
+    return JSON_STRINGIFY_OK;
+}
+
 static int tiny_stringify_value(tiny_context *ctx, const tiny_value *value){
     switch (value->value_type)
     {
@@ -716,6 +730,8 @@ static int tiny_stringify_value(tiny_context *ctx, const tiny_value *value){
         return tiny_stringify_number(ctx, value);
     case TINY_STRING:
         return tiny_stringify_string(ctx, value);
+    case TINY_ARRAY:
+        return tiny_stringify_array(ctx, value);
     default:    return JSON_STRINGIFY_FALSE;
     }
     return JSON_STRINGIFY_OK;
